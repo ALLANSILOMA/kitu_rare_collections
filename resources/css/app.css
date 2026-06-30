@@ -1,0 +1,47 @@
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+:root {
+    font-size: 18px; /* increases everything proportionally */
+}
+
+.fi { /* Filament root class */
+    font-size: 1.125rem; /* 18px */
+}
+/* Dashboard metric cards */
+.fi-dashboard .fi-stats-overview {
+    font-size: 1.125rem; /* bump text size */
+}
+
+.fi-dashboard .fi-stats-overview-card {
+    padding: 1.5rem; /* more breathing room */
+    border-radius: 0.75rem; /* softer corners */
+}
+
+/* Metric numbers */
+.fi-dashboard .fi-stats-overview-card-value {
+    font-size: 1.75rem; /* bigger numbers */
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Metric labels */
+.fi-dashboard .fi-stats-overview-card-label {
+    font-size: 1rem;
+    color: #4b5563; /* Tailwind gray-700 */
+}
+
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
