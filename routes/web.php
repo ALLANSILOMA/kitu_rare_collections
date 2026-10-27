@@ -28,3 +28,10 @@ Route::get('/order/thank-you',                    [Controller::class, 'orderThan
 Route::post('/buy-now',             [Controller::class, 'buyNow'])->name('buy.now');
 Route::get('/buy-now/checkout',     [Controller::class, 'buyNowCheckout'])->name('buy.now.checkout');
 Route::post('/buy-now/place-order', [Controller::class, 'buyNowPlaceOrder'])->name('buy.now.order');
+
+Route::get('/invoice/download/{order}', [Controller::class, 'downloadInvoice'])->name('invoice.download')->middleware(['signed']);
+
+Route::post('/cart/ajax/add',               [Controller::class, 'addToCartAjax'])->name('cart.ajax.add');
+Route::post('/cart/ajax/update/{id}',       [Controller::class, 'updateQuantityAjax'])->name('cart.ajax.update');
+Route::post('/cart/ajax/remove/{id}',       [Controller::class, 'removeItemAjax'])->name('cart.ajax.remove');
+

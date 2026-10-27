@@ -92,7 +92,7 @@
                     </div>
 
                     <button type="submit" class="w-full bg-black text-white py-5 uppercase text-xs tracking-[0.3em] font-bold hover:bg-gray-900 transition shadow-xl">
-                        Add to Bag
+                        Add to Cart
                     </button>
                 </form>
             </div>

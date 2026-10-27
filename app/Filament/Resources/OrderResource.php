@@ -365,6 +365,13 @@ class OrderResource extends Resource
             $phone = '254' . $phone;
         }
 
+        $invoiceUrl = route ('invoice.download', ['order' => $record->id, 'token' => $record->invoice_token]);
+        $invoiceUrl = \Illuminate\Support\Facades\URL::signedRoute(
+            'invoice.download',
+            ['order' => $record->id],
+            now()->addHours(96) // expires in 96 hours
+        );
+
         $amount = 'KES ' . number_format($record->total_amount);
 
         $message = match ($type) {

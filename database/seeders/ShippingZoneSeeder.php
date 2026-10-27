@@ -10,7 +10,7 @@ class ShippingZoneSeeder extends Seeder
     public function run(): void
     {
         $zones = [
-            ['name' => 'Shop Pick Up: Simara Mall 7th Floor 7F20', 'price' => 0],
+            ['name' => 'Shop Pick Up', 'price' => 0],
             ['name' => 'Super Metro: Thika, Kikuyu, Ruiru, Juja, Ngong, Kitengela etc.', 'price' => 250.00],
             ['name' => 'ZONE A: Within CBD', 'price' => 150.00],
             ['name' => 'ZONE B: Upperhill, Valley Road, Community, Hurlingham, Nairobi Hospital, Pangani, Ngara,KNH,Ojijo Road etc.', 'price' => 300.00],

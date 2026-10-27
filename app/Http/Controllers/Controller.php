@@ -141,6 +141,127 @@ class Controller
         return back()->with('success', 'Item removed!');
     }
 
+    public function addToCartAjax(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $product = Product::findOrFail($request->product_id);
+        $quantity = (int)$request->input('quantity', 1);
+        $variationLabel = $request->input('color_selection');
+
+        if ($quantity > $product->stock) {
+            return response()->json([
+                'success' => false,
+                'message' => "Only {$product->stock} available for this item.",
+            ], 422);
+        }
+
+        $cart = session()->get('cart', []);
+        $cartKey = $product->id . ($variationLabel ? '_' . md5($variationLabel) : '');
+
+        if (isset($cart[$cartKey])) {
+            $newTotal = $cart[$cartKey]['quantity'] + $quantity;
+            if ($newTotal > $product->stock) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "You already have {$cart[$cartKey]['quantity']} in your bag. Only {$product->stock} total available.",
+                ], 422);
+            }
+            $cart[$cartKey]['quantity'] = $newTotal;
+        } else {
+            $images = is_array($product->images) ? $product->images : [];
+            $cart[$cartKey] = [
+                'name' => $product->name,
+                'quantity' => $quantity,
+                'price' => $product->price,
+                'images' => $images,
+                'thumbnail' => $images[0] ?? 'default.jpg',
+                'variation_label' => $variationLabel,
+                'stock' => $product->stock,
+            ];
+        }
+
+        session()->put('cart', $cart);
+
+        return response()->json([
+            'success' => true,
+            'message' => $product->name . ' added to bag!',
+            'cart_count' => count(session('cart', [])),
+        ]);
+    }
+
+    public function removeItemAjax(int $id): \Illuminate\Http\JsonResponse
+    {
+        $cart = session()->get('cart', []);
+        unset($cart[$id]);
+        session()->put('cart', $cart);
+
+        // Recalculate totals
+        $subtotal = collect($cart)->sum(fn($i) => $i['price'] * $i['quantity']);
+
+        return response()->json([
+            'success' => true,
+            'cart_count' => count($cart),
+            'subtotal' => $subtotal,
+            'cart_empty' => empty($cart),
+        ]);
+    }
+
+    public function updateQuantityAjax(Request $request, int $id): \Illuminate\Http\JsonResponse
+    {
+        $cart = session()->get('cart', []);
+        $product = Product::findOrFail($id);
+
+        if (!isset($cart[$id])) {
+            return response()->json(['success' => false, 'message' => 'Item not in cart.'], 404);
+        }
+
+        $action = $request->input('action');
+        $manualQty = $request->input('quantity');
+
+        if ($manualQty !== null) {
+            $targetQty = (int)$manualQty;
+        } else {
+            $targetQty = $action === 'increment'
+                ? $cart[$id]['quantity'] + 1
+                : $cart[$id]['quantity'] - 1;
+        }
+
+        if ($targetQty < 1) {
+            unset($cart[$id]);
+            session()->put('cart', $cart);
+            $subtotal = collect($cart)->sum(fn($i) => $i['price'] * $i['quantity']);
+            return response()->json([
+                'success' => true,
+                'removed' => true,
+                'cart_count' => count($cart),
+                'subtotal' => $subtotal,
+                'cart_empty' => empty($cart),
+            ]);
+        }
+
+        if ($targetQty > $product->stock) {
+            return response()->json([
+                'success' => false,
+                'message' => "Only {$product->stock} units available.",
+            ], 422);
+        }
+
+        $cart[$id]['quantity'] = $targetQty;
+        session()->put('cart', $cart);
+
+        $itemTotal = $cart[$id]['price'] * $targetQty;
+        $subtotal = collect($cart)->sum(fn($i) => $i['price'] * $i['quantity']);
+
+        return response()->json([
+            'success' => true,
+            'removed' => false,
+            'new_quantity' => $targetQty,
+            'item_total' => $itemTotal,
+            'subtotal' => $subtotal,
+            'cart_count' => count($cart),
+            'cart_empty' => empty($cart),
+        ]);
+    }
+
     public function checkout()
     {
         $cart = session()->get('cart', []);
@@ -381,5 +502,10 @@ class Controller
 
         // ← FIX: was redirect()->route('home'), customer never reached payment page
         return redirect()->route('order.payment', $order->id);
+    }
+
+    public function downloadInvoice(Order $order){
+        return Pdf::loadView('invoice', ['record' => $order])
+                   ->download("Invoice-{$order->order_reference}.pdf");
     }
 }

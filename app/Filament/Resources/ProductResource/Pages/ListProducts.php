@@ -27,12 +27,14 @@ class ListProducts extends ListRecords
                 ->color('gray')
                 ->action(function () {
                     $rows = [
-                        ['name', 'description', 'price', 'stock'],
-                        ['Birkin Tote', 'Premium genuine leather tote bag', '4500', '20'],
+                        ['name', 'description', 'price', 'stock','buying_price','supplier','variations','variation description'],
                     ];
                     $headers = [
                         'Content-Type'        => 'text/csv',
                         'Content-Disposition' => 'attachment; filename="kiturarecollections-product-template.csv"',
+                        'Pragma'               => 'no-cache',
+                        'Cache-Control'        => 'must-revalidate, post-check=0, pre-check=0',
+                        'Expires'              => '0',
                     ];
                     $callback = function () use ($rows) {
                         $handle = fopen('php://output', 'w');

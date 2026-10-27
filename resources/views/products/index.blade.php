@@ -95,7 +95,7 @@
     {{-- Product Grid --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-8">
         @forelse($products as $product)
-            <div class="group relative flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
+            <div class="group relative flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer">
 
                 {{-- Image Container --}}
                 <div class="relative h-80 overflow-hidden bg-[#F3F3F3]">
@@ -122,10 +122,16 @@
 
                 {{-- Product Info --}}
                 <div class="p-6 flex-1 flex flex-col text-center">
-                    <h3 class="text-sm font-semibold text-gray-900 tracking-tight uppercase">{{ $product->name }}</h3>
+                    <h3 class="text-sm font-semibold text-gray-900 tracking-tight uppercase">
+                        {{-- Stretched link: ::after covers the whole card so any click opens the preview --}}
+                        <a href="{{ route('products.show', $product->id) }}"
+                           class="after:absolute after:inset-0 after:content-['']">
+                            {{ $product->name }}
+                        </a>
+                    </h3>
                     <p class="text-gray-400 mt-2 text-sm font-medium">KES {{ number_format($product->price) }}</p>
 
-                    <div class="mt-6 pt-4 flex flex-col gap-2">
+                    <div class="relative z-10 mt-6 pt-4 flex flex-col gap-2">
                         <a href="{{ route('products.show', $product->id) }}"
                            class="py-3.5 rounded-lg border border-gray-200 text-[10px] font-bold uppercase tracking-widest hover:bg-gray-50 transition">
                             View Piece
@@ -137,7 +143,7 @@
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                                 <button type="submit"
                                         class="w-full bg-black text-white py-3.5 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-gray-800 transition shadow-lg">
-                                    Add to Bag
+                                    Add to Cart
                                 </button>
                             </form>
                         @else

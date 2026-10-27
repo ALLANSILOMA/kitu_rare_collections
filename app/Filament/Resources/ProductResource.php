@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Models\Product;
-use App\Services\ProductCsvImport;
 use App\Services\ProductImporter;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -44,8 +43,23 @@ class ProductResource extends Resource
                 Forms\Components\RichEditor::make('description')
                     ->toolbarButtons(['bold','italic','underline','strike','link','h2','h3','bulletList','orderedList','undo','redo'])
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('price')->numeric()->prefix('KES')
+                Forms\Components\TextInput::make('price')
+                    ->label(' Selling Price (KES)')
+                    ->numeric()
+                    ->prefix('KES')
                     ->helperText('Single price shared across all variations.'),
+                Forms\Components\TextInput::make('buying_price')
+                ->label('Buying / Cost Price (KES)')
+                ->numeric()
+                ->prefix('KES')
+                ->default(0)
+                ->helperText('Used to calculate profit in the Sales module.')
+                ->required(),
+                Forms\Components\TextInput::make('supplier')
+                ->label('Supplier')
+                ->placeholder('e.g Nairobi Textile Distributors')
+                ->nullable()
+                ->columnSpanFull(),
                 Forms\Components\TextInput::make('stock')->required()->numeric()->default(0)
                     ->helperText('Total stock shared across all variations.'),
             ])->columns(2),
@@ -57,6 +71,26 @@ class ProductResource extends Resource
                         ->disk('public')->directory('product')->visibility('public')
                         ->imageEditor()->columnSpanFull(),
                 ]),
+            Section::make('Product Videos')
+            ->schema([
+                FileUpload::make('videos')->label('Product Videos')
+                    ->helperText('Upload MP4 or WebM clips - max 60MB each. Short clips (15-60s) work best on mobile phones')
+                    ->multiple()
+                    ->reorderable()
+                    ->appendFiles()
+                    ->disk('public')
+                    ->directory('product')
+                    ->visibility('public')
+                    ->acceptedFileTypes([
+                        'video/mp4',
+                        'video/webm',
+                        'video/ogg',
+                        'video/quicktime',                // .mov from iPhone
+                    ])
+                    ->maxFiles(5)
+                    ->maxSize(60 * 1024)
+                    ->columnSpanFull(),
+            ]),
 
             Section::make('Variations')
                 ->description('Define Color, Size, and/or Material options. All options share the same price and stock.')
@@ -114,7 +148,19 @@ class ProductResource extends Resource
                     ->badge()->color('gray'),
 
                 Tables\Columns\TextColumn::make('price')
+                    ->label('Selling Price')
                     ->money('KES')->sortable()->alignment('right'),
+
+                Tables\Columns\TextColumn::make('buying_price')
+                ->label('Buying Price')
+                ->money('KES')->sortable()->toggledHiddenByDefault('true'),
+
+                Tables\Columns\TextColumn::make('supplier')
+                  ->label('Supplier')
+                ->placeholder('—')
+                ->searchable()
+                ->sortable()
+                ->toggledHiddenByDefault('true'),
 
                 Tables\Columns\TextColumn::make('stock')->label('Stock')
                     ->numeric()->sortable()->badge()
